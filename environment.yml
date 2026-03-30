@@ -1,0 +1,19 @@
+name: lineagequant
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.7
+  # Python libraries
+  - biopython
+  - pysam
+  - pandas
+  # Bioinformatics tools
+  - hisat2
+  - samtools
+  - subread          # provides featureCounts
+  - gffread
+  - pip
+  - pip:
+      - lineagequant
