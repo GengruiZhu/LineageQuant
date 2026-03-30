@@ -1,36 +1,40 @@
 # LineageQuant
 
-**Allele-resolved RNA-seq quantification for polyploid and hybrid genomes**
+**Haplotype-resolved expression quantification for allopolyploid genomes**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/GengruiZhu/LineageQuant/blob/main/LICENSE)
 [![Python 3.7+](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://www.python.org/)
 
 ---
 
 ## Description
 
-LineageQuant is a bioinformatics pipeline for allele-resolved expression
-quantification in polyploid and hybrid genomes. It deconvolves RNA-seq
-signals from multi-copy gene families across ancestral subgenomes using a
-three-stage framework:
+LineageQuant is a bioinformatics tool designed to resolve haplotype-level
+expression dosage in allopolyploid genomes. The software employs a
+three-stage computational framework to deconvolve highly mixed RNA-seq
+signals using subgenome-specific features:
 
-1. **K-mer Theta engine** – Subgenome-specific k-mer probes are constructed
-   from allele sequences to compute an initial per-allele read abundance
-   score (Theta).
-2. **BAM lineage P-value assignment** – Each read overlapping a target locus
-   is scanned against ancestral k-mer dictionaries (forward and
-   reverse-complement) and assigned a per-lineage probability vector.
-3. **Expectation-Maximization (EM) deconvolution** – Ambiguously mapping
-   reads are iteratively reallocated using the Theta priors and per-read
-   lineage probabilities, converging on final allele-resolved expression
-   values.
+1. **K-mer Theta engine** – Haplotype-specific k-mer probes are constructed
+   from allele sequences to estimate the initial transcriptional abundance
+   prior (Theta) for each allele.
+2. **BAM lineage P-value assignment** – Sequencing reads are scanned in
+   multiple dimensions against ancestral subgenome-specific k-mer
+   dictionaries (forward and reverse-complement) to generate a conditional
+   probability matrix (P) describing each read's assignment to a specific
+   haplotype.
+3. **Expectation-Maximization (EM) deconvolution** – The EM algorithm
+   integrates the Theta prior and the alignment-based probability P to
+   iteratively reallocate multi-mapping reads, ultimately converging on
+   precise allele-level expression values.
 
-Orphan (single-copy) genes are quantified in parallel by featureCounts and
-merged into a single unified TPM output matrix.
+Additionally, LineageQuant adopts a hybrid quantification strategy that
+merges parallel count results for single-copy genes into the final output,
+producing a genome-wide unified TPM expression matrix.
 
-LineageQuant supports **any number (≥ 2) of ancestral lineages** and is
-applicable to polyploid crops and hybrid organisms such as sugarcane,
-wheat, and cotton.
+LineageQuant natively supports dynamic multi-dimensional **(≥ 2) joint
+quantification across ancestral lineages**, making it particularly
+well-suited for transcriptomic studies in complex allopolyploid crops such
+as sugarcane, wheat, and cotton.
 
 ---
 
@@ -172,4 +176,5 @@ Yi Chen, Gengrui Zhu
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/GengruiZhu/LineageQuant/blob/main/LICENSE)
+
