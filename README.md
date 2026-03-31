@@ -176,5 +176,7 @@ Yi Chen, Gengrui Zhu
 
 ## License
 
-[MIT](https://github.com/GengruiZhu/LineageQuant/blob/main/LICENSE)
+This project is licensed under a **Non-Commercial Research License**.  
+Free to use for academic and research purposes only. Commercial use is strictly prohibited.  
+See the [LICENSE](./LICENSE) file for details.
 
