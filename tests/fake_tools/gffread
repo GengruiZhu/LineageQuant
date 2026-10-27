@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Test stand-in for gffread: gffread -w OUT.fa -g GENOME.fa IN.gff (spliced exons of mRNA/transcript features;
+CDS when a transcript has no exon), reverse complement on '-', 70 columns. Uses GENOME.fa.fai when present."""
+import sys
+a = sys.argv[1:]
+out = a[a.index("-w") + 1]; g = a[a.index("-g") + 1]
+gff = [x for i, x in enumerate(a) if not x.startswith("-") and a[i - 1] not in ("-w", "-g")][-1]
+seq, name, cur = {}, None, []
+for line in open(g):
+    if line.startswith(">"):
+        if name is not None: seq[name] = "".join(cur)
+        name = line[1:].split()[0]; cur = []
+    else: cur.append(line.strip())
+if name is not None: seq[name] = "".join(cur)
+tx, order, ex, cds = {}, [], {}, {}
+for line in open(gff):
+    if line.startswith("#") or not line.strip(): continue
+    p = line.rstrip("\n").split("\t")
+    if len(p) < 9: continue
+    at = dict(kv.split("=", 1) for kv in p[8].strip(";").split(";") if "=" in kv)
+    if p[2] in ("mRNA", "transcript"):
+        tx[at["ID"]] = (p[0], p[6]); order.append(at["ID"])
+    elif p[2] in ("exon", "CDS"):
+        for par in at.get("Parent", "").split(","):
+            (ex if p[2] == "exon" else cds).setdefault(par, []).append((int(p[3]), int(p[4])))
+comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
+with open(out, "w") as f:
+    for t in order:
+        chrom, strand = tx[t]
+        parts = sorted(ex.get(t) or cds.get(t) or [])
+        if not parts or chrom not in seq: continue
+        s = "".join(seq[chrom][b - 1:e] for b, e in parts)
+        if strand == "-": s = s.translate(comp)[::-1]
+        f.write(">" + t + "\n")
+        for i in range(0, len(s), 70): f.write(s[i:i + 70] + "\n")
+sys.stderr.write(f"fake gffread: {len(order)} transcripts\n")

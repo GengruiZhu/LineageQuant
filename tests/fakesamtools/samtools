@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+# fake samtools for tests: collate (-O streams SAM to stdout, -o writes a file), view -h / -H on SAM text
+import sys
+a = sys.argv[1:]
+def load(p):
+    l = (sys.stdin.read() if p == "-" else open(p).read()).splitlines()
+    return [x for x in l if x.startswith("@")], [x for x in l if x and not x.startswith("@")]
+if a[0] == "collate":
+    pos = [x for x in a[1:] if not x.startswith("-")]
+    # drop option values
+    i = 1; args = []
+    while i < len(a):
+        if a[i] in ("-@", "-o"): i += 2; continue
+        if a[i].startswith("-"): i += 1; continue
+        args.append(a[i]); i += 1
+    h, b = load(args[0])
+    h = ["@HD\tVN:1.6\tSO:unsorted\tGO:query"] + [x for x in h if not x.startswith("@HD")]
+    order = {}
+    for x in b: order.setdefault(x.split("\t")[0], len(order))
+    b.sort(key=lambda x: order[x.split("\t")[0]])
+    txt = "\n".join(h + b) + "\n"
+    if "-o" in a: open(a[a.index("-o") + 1], "w").write(txt)
+    else: sys.stdout.write(txt)
+elif a[0] == "view":
+    i = 1; args = []
+    while i < len(a):
+        if a[i] == "-@": i += 2; continue
+        if a[i].startswith("-") and a[i] != "-": i += 1; continue
+        args.append(a[i]); i += 1
+    src = args[-1] if args else "-"
+    h, b = load(src)
+    if "-H" in a: sys.stdout.write("\n".join(h) + "\n")
+    else: sys.stdout.write("\n".join(h + b) + "\n")

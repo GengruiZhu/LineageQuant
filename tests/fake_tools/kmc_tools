@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Test stand-in for kmc_tools: [-tN] complex CFG | transform DB dump TXT | transform DB histogram HIST"""
+import re, sys
+a = [x for x in sys.argv[1:] if not re.match(r"^-t\d+$", x)]
+def load(db):
+    return set(l.strip() for l in open(db + ".kmc_pre") if l.strip())
+def save(db, S):
+    with open(db + ".kmc_pre", "w") as f:
+        f.write("\n".join(sorted(S)) + ("\n" if S else ""))
+    open(db + ".kmc_suf", "w").close()
+if a[0] == "complex":
+    lines = [l.strip() for l in open(a[1]) if l.strip()]
+    sec, env, outs = None, {}, []
+    for l in lines:
+        if l in ("INPUT:", "OUTPUT:"): sec = l; continue
+        name, rhs = [x.strip() for x in l.split("=", 1)]
+        if sec == "INPUT:": env[name] = load(rhs.split()[0])
+        else: outs.append((name, rhs))
+    def ev(expr):
+        toks = re.findall(r"\(|\)|\*|-|\+|[A-Za-z_][A-Za-z0-9_]*", expr)
+        pos = [0]
+        def peek(): return toks[pos[0]] if pos[0] < len(toks) else None
+        def take(): pos[0] += 1; return toks[pos[0] - 1]
+        def atom():
+            t = take()
+            if t == "(":
+                v = add(); assert take() == ")"; return v
+            return set(env[t])
+        def mul():
+            v = atom()
+            while peek() == "*": take(); v = v & atom()
+            return v
+        def add():
+            v = mul()
+            while peek() in ("-", "+"):
+                op = take(); w = mul(); v = (v - w) if op == "-" else (v | w)
+            return v
+        return add()
+    for name, rhs in outs:
+        save(name, ev(rhs))
+elif a[0] == "transform":
+    db, op, out = a[1], a[2], a[3]
+    S = load(db)
+    if op == "dump":
+        with open(out, "w") as f:
+            for x in sorted(S): f.write(f"{x}\t1\n")
+    elif op == "histogram":
+        with open(out, "w") as f: f.write(f"1\t{len(S)}\n")
+else:
+    sys.exit("fake kmc_tools: unsupported " + " ".join(a))

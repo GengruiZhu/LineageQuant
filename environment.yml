@@ -1,19 +1,29 @@
 name: lineagequant
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - python>=3.7
-  # Python libraries
-  - biopython
-  - pysam
+  # ── building LineageQuant (bash build.sh) ─────────────────────────────────
+  - conda-forge::gxx_linux-64>=7
+  - conda-forge::zlib
+  - conda-forge::make
+  # ── external tools, by route (lineagequant run names any that is missing) ─
+  - bioconda::bowtie2>=2.4    # --aligner bowtie2 (default); --aligner lqmap needs nothing
+  - bioconda::salmon          # optional: --aligner sa
+  - bioconda::kmc             # --ancestor: lineage-specific k-mer markers (kmc + kmc_tools)
+  - bioconda::gffread         # --ancestor: transcripts from progenitor genome + GFF
+  - bioconda::mafft           # --msa-snp / --phased-fasta: MSA SNP database
+  - bioconda::samtools>=1.10  # --longread: reading the long-read BAM
+  - bioconda::minimap2        # making the long-read BAM
+  # ── optional: test suite (tests/run_all.sh compares with LineageQuant 1.0.0) ─
+  - python>=3.8
+  - numpy
   - pandas
-  # Bioinformatics tools
-  - hisat2
-  - samtools
-  - subread          # provides featureCounts
-  - gffread
-  - pip
-  - pip:
-      - lineagequant
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Notes:
+#   - LineageQuant itself is one C++ executable; Python is needed only to run the equivalence tests.
+#   - jcvi / AlleleFinder for building allele clusters are NOT bundled; produce clusters with your
+#     preferred tool, then standardize via `lineagequant normalize-clusters`.
+#   - Read simulation for benchmarking (R / polyester) is not part of the package.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

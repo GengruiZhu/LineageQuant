@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+"""Test stand-in for `samtools faidx FILE` (well-formed FASTA): NAME LEN OFFSET LINEBASES LINEWIDTH"""
+import sys
+assert sys.argv[1] == "faidx"
+fa = sys.argv[2]
+data = open(fa, "rb").read()
+out, i, n = [], 0, len(data)
+recs = []
+while i < n:
+    if data[i:i + 1] == b">":
+        e = data.find(b"\n", i); e = n if e < 0 else e
+        name = data[i + 1:e].split()[0].decode()
+        off = e + 1; j = off; L = 0; lb = lw = 0
+        while j < n and data[j:j + 1] != b">":
+            k = data.find(b"\n", j); k = n if k < 0 else k
+            line = data[j:k]
+            if lb == 0 and line.strip(): lb = len(line.rstrip(b"\r")); lw = k - j + 1
+            L += len(line.strip())
+            j = k + 1
+        recs.append((name, L, off, lb, lw)); i = j
+    else:
+        i = data.find(b"\n", i) + 1 or n
+with open(fa + ".fai", "w") as f:
+    for r in recs: f.write("%s\t%d\t%d\t%d\t%d\n" % r)

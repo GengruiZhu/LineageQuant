@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Test stand-in for KMC: kmc -kK -ci1 -csN -tT -fm IN.fa PREFIX TMPDIR -> PREFIX.kmc_pre (canonical k-mers, text)"""
+import sys
+a = sys.argv[1:]
+k = int([x for x in a if x.startswith("-k")][0][2:])
+pos = [x for x in a if not x.startswith("-")]
+fa, prefix, tmp = pos[0], pos[1], pos[2]
+import os
+assert os.path.isdir(tmp), "tmp dir must exist"
+comp = str.maketrans("ACGT", "TGCA")
+seqs, cur = [], []
+for line in open(fa):
+    if line.startswith(">"):
+        if cur: seqs.append("".join(cur)); cur = []
+    else:
+        cur.append(line.strip().upper())
+if cur: seqs.append("".join(cur))
+S = set()
+for s in seqs:
+    for i in range(len(s) - k + 1):
+        w = s[i:i + k]
+        if any(c not in "ACGT" for c in w): continue
+        r = w.translate(comp)[::-1]
+        S.add(min(w, r))
+with open(prefix + ".kmc_pre", "w") as f:
+    f.write("\n".join(sorted(S)) + ("\n" if S else ""))
+open(prefix + ".kmc_suf", "w").close()

@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Test stand-in for MAFFT: deterministic gapped "alignment" (lowercase, 60 columns per line, input order).
+Depending on a hash of the input it also exits with an error, prints nothing, or prints records of unequal length,
+so that both implementations go through those paths. Usage as mafft: mafft [options] FILE"""
+import hashlib, sys
+args = [a for a in sys.argv[1:]]
+if "--version" in args:
+    sys.stderr.write("v7.999 (fake)\n"); sys.exit(0)
+path = args[-1]
+txt = open(path).read()
+h = int(hashlib.md5(txt.encode()).hexdigest(), 16)
+recs, name = [], None
+for line in txt.splitlines():
+    if line.startswith(">"):
+        name = line[1:].strip(); recs.append([name, ""])
+    elif name is not None:
+        recs[-1][1] += line.strip()
+if h % 23 == 0:
+    sys.stderr.write("fake mafft: error\n"); sys.exit(1)
+if h % 29 == 0:
+    sys.exit(0)
+out = []
+for i, (n, s) in enumerate(recs):
+    s = s.lower()
+    k = (h >> (i * 3)) % 4                      # a gap run of 0-3 at a record-dependent place
+    p = ((h >> (i * 5 + 7)) % max(1, len(s)))
+    s = s[:p] + "-" * k + s[p:]
+    out.append([n, s])
+L = max(len(s) for _, s in out)
+for r in out:
+    r[1] = r[1] + "-" * (L - len(r[1]))
+if h % 31 == 0 and len(out) > 1:
+    out[-1][1] = out[-1][1][:-1]
+w = sys.stdout.write
+for n, s in out:
+    w(">" + n + "\n")
+    for i in range(0, len(s), 60):
+        w(s[i:i + 60] + "\n")
