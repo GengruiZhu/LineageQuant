@@ -1,0 +1,7 @@
+include README.md
+include CHANGELOG.md
+include LICENSE
+include environment.yml
+include docs/*.md
+recursive-include lineagequant *.sh
+recursive-include examples *.sh

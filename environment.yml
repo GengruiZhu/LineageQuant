@@ -1,0 +1,40 @@
+name: lineagequant
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # ── Python core ───────────────────────────────────────────────────────────
+  - python=3.9
+  - numpy
+  - pandas
+  - scipy
+  - biopython
+  - pysam
+  - pip
+  # cyvcf2 for the population-VCF SNP route only
+  - bioconda::cyvcf2
+  # ── Alignment / k-mer / variant tools ─────────────────────────────────────
+  - bioconda::bowtie2>=2.4    # short-read transcriptome mapping (Step 00, default aligner)
+  - bioconda::hisat2          # optional alternative aligner (--aligner hisat2)
+  - bioconda::minimap2        # long-read mapping (optional, hybrid route)
+  - bioconda::samtools>=1.10  # sort / index / collate
+  - bioconda::gffread         # transcript extraction from genome+GFF
+  - bioconda::kmc             # lineage-specific k-mer markers (Step build_markers)
+  - bioconda::mafft           # MSA SNP route (Step build_snp_msa)
+  - bioconda::bcftools
+  - bioconda::tabix
+  - bioconda::htslib          # provides bgzip
+  # ── Optional: read simulation for benchmarking / validation ───────────────
+  - r-base=4.2
+  - bioconda::bioconductor-polyester
+  - bioconda::bioconductor-biostrings
+  # ── Fix libcrypto issue common with htslib tools ──────────────────────────
+  - openssl=1.1
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Notes:
+#   - jcvi / AlleleFinder for building allele clusters are NOT bundled; produce
+#     clusters with your preferred tool, then standardize via
+#     `lineagequant normalize-clusters`.
+#   - The lineage-marker route needs kmc + kmc_tools (both from bioconda::kmc).
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
